@@ -15,10 +15,57 @@
             border-radius: 50%;
             margin:0 auto;
           }
+        h2.enterInput {
+            font-family: Arial, Helvetica, sans-serif;
+          }
     </style>
     </head>
     <body>
-        <h1>A Pretty Strange Game</h1>
+        <div>
+            <h1>A Pretty Strange Game</h1>
+        </div>
+        <!-- input the number of columns and rows -->
+        <div>
+            <div>
+                <br>
+                <h2 class="enterInput">Enter 5-20 (inclusive) for Columns and Rows:</h2>
+            </div>
+            Columns:<br>
+            <input type="text" id="columns">
+            <br>
+            Rows:<br>
+            <input type="text" id="rows">
+            <br>
+            <button onclick="getUserInput()">Submit</button>
+        </div>
+        <!-- javascript for taking the user input -->
+            <script>
+                function getUserInput() {
+                    console.log('DEBUG: getUserInput()');
+                    var columns = document.getElementById("columns").value;
+                    console.log('DEBUG: Columns = ' + columns);
+                    var rows = document.getElementById("rows").value;
+                    console.log('DEBUG: Rows = ' + rows);
+                    if (columns < 5 || columns > 20) {
+                        var colsInput = document.getElementById("columns");
+                        colsInput.value = "";
+                        while (columns < 5 || columns > 20) {
+                            columns = prompt("Please Enter 5 - 20 Columns (inclusive)");
+                            console.log(columns);
+                        }
+                    }
+                    if (rows < 5 || rows > 20) {
+                        var rowsInput = document.getElementById("rows");
+                        rowsInput.value = "";
+                        while (rows < 5 || rows > 20) {
+                            rows = prompt("Please Enter 5 - 20 Rows (inclusive)");
+                            console.log(rows);
+                        }
+                    }
+                    console.log('DEBUG: Columns = ' + columns);
+                    console.log('DEBUG: Rows = ' + rows);
+                }
+            </script>
         <!-- div tag for the building the grid -->
         <div id="divTable">
         <!-- javascript section for grid -->
@@ -82,7 +129,6 @@
             is met at which point the interval is cleared and the sim stops:
             */
             function gameSimulator() {
-                
                 moveFunction();
                 var showSim = setTimeout(function(){ gameSimulator(); }, 200);
                 
