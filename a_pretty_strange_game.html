@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>A Pretty Strange Game</title>
+        <style>
+        td.circle::before{
+            content: attr(marker);
+            display: block;
+            background: #f00;
+            width: 10px;
+            height: 10px;
+            line-height:10px;
+            text-align:center;
+            border-radius: 50%;
+            margin:0 auto;
+          }
+    </style>
+    </head>
+    <body>
+        <h1>A Pretty Strange Game</h1>
+        <!-- div tag for the building the grid -->
+        <div id="divTable">
+        <!-- javascript section for grid -->
+        <script>
+            var divTable = document.getElementById('divTable');
+            var table_structure;
+            var i, j;
+            table_structure = '<table border="1" width="100%">';
+            for(i = 0; i < 10; i++) {
+                table_structure += '<tr>';
+                for(j = 0; j < 10; j++) {
+                    table_structure += '<td height="25" width="25">';
+                }
+                table_structure += '</td>';
+            }
+            table_structure += '</table>';
+            divTable.innerHTML = table_structure;
+
+            //Move counter metrics:
+            var cell_touch_count = 0.0;
+            var max_cell_touches = 1000001;
+            /*
+            missing metrics (as of 8/24/17 @ 7:52am):
+                - min. times a particular cell was touched
+                - max. times a particular cell was touched
+                - number of times each particular cell was touched
+            */
+
+            //Game board position GLOBAL vars:
+            var original_square_pos = 90;
+            var previous_square_pos;
+            var new_square_pos;
+
+            var td = document.getElementsByTagName("td")[original_square_pos]; //get the 90th (bottom left corner) <td>
+            var att = document.createAttribute("class"); //creates a class attribute
+            att.value = "circle"; //sets the value of the class attribute
+            td.setAttributeNode(att);
+
+            //checkForWinner(position) called on each directional move:
+            function checkForWinnerOnBtnClick(position) {
+                if (position == 9) {
+                    var button = document.getElementsByTagName("button")[0];
+                    button.hidden = true;
+                    document.getElementById('game_result').innerHTML = "You Win!!!"
+                    console.log('DEBUG: ' + 'position parameter = ' + position + ' YOU WIN!')
+                }
+            }
+
+            //checkForMaxTouches(touch_count) called on each directional move:
+            function checkForMaxTouchesOnBtnClick(touch_count) {
+                if (touch_count >= max_cell_touches) {
+                    var button = document.getElementsByTagName("button")[0];
+                    button.hidden = true;
+                    document.getElementById('game_result').innerHTML = "1,000,001 Touches - Game Over!"
+                    console.log('DEBUG: ' + 'touch_count parameter = ' + touch_count + ' YOU LOSE!')
+                }
+            }
+
+            /*gameSimulator() calls the moveFunction() and then itself is 
+            called recursively by the setTimeout function until a conditional
+            is met at which point the interval is cleared and the sim stops:
+            */
+            function gameSimulator() {
+                
+                moveFunction();
+                var showSim = setTimeout(function(){ gameSimulator(); }, 200);
+                
+                if (new_square_pos == 9 || cell_touch_count > 1000000) {
+                    clearTimeout(showSim);
+                    var mv_button = document.getElementsByTagName("button")[0];
+                    var sim_button = document.getElementsByTagName("button")[1];
+                    mv_button.hidden = true;
+                    sim_button.hidden = true;
+                    if (new_square_pos == 9) {
+                        document.getElementById('result_stats').innerHTML = "GAME RESULT = Marker Finish: WINNER";
+                        document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
+                        document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
+                    } else {
+                    document.getElementById('result_stats').innerHTML = "GAME RESULT = 1,000,001 Touches: LOSER";
+                    document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
+                    document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
+                    }
+                    console.log('DEBUG: ' + 'touch_count parameter = ' + cell_touch_count + ' YOU LOSE!');
+                }
+            }
+
+            //moveFunction() controls the movement logic of the marker on the board:
+            function moveFunction() {
+                //Place the marker in bottom-left corner to begin the game:
+                console.log('cell touch count = ' + cell_touch_count);
+                if (cell_touch_count < 1) {
+                    previous_square_pos = original_square_pos; //set this for the first turn
+                } else {
+                    previous_square_pos = new_square_pos;
+                }
+                console.log('DEBUG: previous_sqaure_pos = ' + previous_square_pos);
+                
+                console.log('DEBUG: moveFunction() executed')
+                //Randomly choose a direction: up, down, left, or right:
+                var D = Math.floor((Math.random() * 4) + 1);
+                //Randomly choose a number of steps: 0, 1, or 2:
+                var N = Math.floor((Math.random() * 3) + 0);
+
+                console.log('DEBUG: D= ' + D + ' and N= ' + N);
+                
+                switch(D) {
+                    case 1:
+                        new_square_pos = previous_square_pos-(N*10);
+                        document.getElementsByTagName("td")[previous_square_pos].removeAttribute("class");
+                        console.log('DEBUG: new_sqaure_pos = ' + new_square_pos);
+                        
+                        if (new_square_pos >= 0 && new_square_pos < 100) {
+                            //count square touch (add to million count for analytics)
+                            cell_touch_count += 1;
+                            td = document.getElementsByTagName("td")[new_square_pos];
+                            att = document.createAttribute("class"); //creates a class attribute
+                            att.value = "circle"; //sets the value of the class attribute
+                            td.setAttributeNode(att);
+                        } else {
+                            //don't move
+                            console.log('DEBUG: location ' + new_square_pos + ' out of bounds');
+                            new_square_pos = previous_square_pos; //reset so no move on o.o.b.
+                            cell_touch_count += 1;
+                            td = document.getElementsByTagName("td")[new_square_pos];
+                            att = document.createAttribute("class"); //creates a class attribute
+                            att.value = "circle"; //sets the value of the class attribute
+                            td.setAttributeNode(att);
+                        }
+                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForWinnerOnBtnClick(new_square_pos);
+                        break;
+                    case 2:
+                        new_square_pos = previous_square_pos+(N*10);
+                        previous_square_pos = new_square_pos-(N*10);
+                        document.getElementsByTagName("td")[previous_square_pos].removeAttribute("class");
+
+                        if (new_square_pos >= 0 && new_square_pos < 100) {
+                            //count square touch (add to million count for analytics)
+                            cell_touch_count += 1;
+                            td = document.getElementsByTagName("td")[new_square_pos];
+                            att = document.createAttribute("class"); //creates a class attribute
+                            att.value = "circle"; //sets the value of the class attribute
+                            td.setAttributeNode(att);
+                        } else {
+                            // don't move
+                            // don't move
+                            console.log('DEBUG: location ' + new_square_pos + ' out of bounds');
+                            new_square_pos = previous_square_pos; //reset so no move on o.o.b.
+                            cell_touch_count += 1;
+                            td = document.getElementsByTagName("td")[new_square_pos];
+                            att = document.createAttribute("class"); //creates a class attribute
+                            att.value = "circle"; //sets the value of the class attribute
+                            td.setAttributeNode(att);
+                        }
+                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForWinnerOnBtnClick(new_square_pos);
+                        break;
+                    case 3:
+                        new_square_pos = previous_square_pos-(N*1);
+                        previous_square_pos = new_square_pos+(N*1);
+                        document.getElementsByTagName("td")[previous_square_pos].removeAttribute("class");
+                        console.log('DEBUG: new_sqaure_pos = ' + new_square_pos);
+
+                        if (new_square_pos >= 0 && new_square_pos < 100) {
+                            //count square touch (add to million count for analytics)
+                            cell_touch_count += 1;
+                            td = document.getElementsByTagName("td")[new_square_pos];
+                            att = document.createAttribute("class"); //creates a class attribute
+                            att.value = "circle"; //sets the value of the class attribute
+                            td.setAttributeNode(att);
+                        } else {
+                            // don't move
+                            console.log('DEBUG: location ' + new_square_pos + ' out of bounds');
+                            new_square_pos = previous_square_pos; //reset so no move on o.o.b.
+                            cell_touch_count += 1;
+                            td = document.getElementsByTagName("td")[new_square_pos];
+                            att = document.createAttribute("class"); //creates a class attribute
+                            att.value = "circle"; //sets the value of the class attribute
+                            td.setAttributeNode(att);
+                        }
+                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForWinnerOnBtnClick(new_square_pos);
+                        break;
+                    case 4:
+                        new_square_pos = previous_square_pos+(N*1);
+                        previous_square_pos = new_square_pos-(N*1);
+                        document.getElementsByTagName("td")[previous_square_pos].removeAttribute("class");
+                        console.log('DEBUG: new_sqaure_pos = ' + new_square_pos);
+
+                        if (new_square_pos >= 0 && new_square_pos < 100) {
+                            //count square touch (add to million count for analytics)
+                            cell_touch_count += 1;
+                            td = document.getElementsByTagName("td")[new_square_pos];
+                            att = document.createAttribute("class"); //creates a class attribute
+                            att.value = "circle"; //sets the value of the class attribute
+                            td.setAttributeNode(att);
+                        } else {
+                            // don't move
+                            console.log('DEBUG: location ' + new_square_pos + ' out of bounds');
+                            new_square_pos = previous_square_pos; //reset so no move on o.o.b.
+                            cell_touch_count += 1;
+                            td = document.getElementsByTagName("td")[new_square_pos];
+                            att = document.createAttribute("class"); //creates a class attribute
+                            att.value = "circle"; //sets the value of the class attribute
+                            td.setAttributeNode(att);
+                        }
+                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForWinnerOnBtnClick(new_square_pos);
+                        break;
+                }
+            }
+        </script>
+        </div>
+        <!-- move button -->
+        <div>
+            <button onclick="moveFunction()">single move btn</button>
+        </div>
+        <!-- game simulator button -->
+        <div>
+            <button onclick="gameSimulator()">game simulator btn</button>
+        </div>
+        <!-- game result message -->
+        <div>
+            <h2 id="game_result"></h2>
+        </div>
+        <!-- game stats -->
+        <div>
+            <h3 id="touch_total"></h3>
+            <h3 id="avg_touches_per_cell"></h3>
+            <h3 id="result_stats"></h3>
+        </div>
+    </body>
+</html>
