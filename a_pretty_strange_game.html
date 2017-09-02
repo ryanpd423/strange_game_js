@@ -1,3 +1,52 @@
+<!-- Ryan Davis
+9/1/17
+CS 4500
+Student ID: 12171429
+Student SSO: rpd4g5
+Hw2
+** - Note to Dr. Miller - **: 
+I did not have a
+partner on this assignment
+because I missed class on
+Monday due to the Wake, and
+was not assigned a partner.
+-->
+
+<!-- This game is an HTML, CSS, and JavaScript
+based game called "A Pretty Strange Game."
+
+This game simulates a ball moving around a grid.
+The ball always starts in the bottom-left corner
+of the grid, and when the game is simulated the
+ball moves all over the board at random until
+it lands in the top-right corner, in which case
+you win.  If the ball has not made it to the
+top-right corner within 1,000,000 cell touches
+(1 cell touch per move; even if the ball doesn't
+move anywhere due to out of bounds restraints)
+then you lose.
+
+In this iteration of the software you can specify
+the number of columns and rows you would like
+to have as long as they are between 5 and 20 
+inclusively.
+
+I added the option to move the ball one space
+at a time as an additional feature although
+I created it mostly for debugging to be honest
+however it adds a nice bit of functionality to
+the game in my opinion.
+
+Due to some time constraints and an initial
+oversight in my design I did not implement
+a method for tracking the number of times
+an individual cell gets touched although I could
+add this in future versions of the product without
+too much re-work I would guess.
+
+Thanks and enjoy the code!
+-->
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -37,15 +86,29 @@
             <input type="text" id="rows">
             <br>
             <button onclick="getUserInput()">Submit</button>
+
         </div>
         <!-- javascript for taking the user input -->
             <script>
+                //Default values for the columns and rows of the grid:
+                var columns = 10;
+                var rows = 10;
+                var tableReDrawn = false;
+                var cell_touch_count;
+                var max_cell_touches;
+                var original_square_pos;
+                var previous_square_pos;
+                var new_square_pos;
+                var td;
+                var att;
+
                 function getUserInput() {
+                    tableReDrawn = true;
+                    table_structure.value = ""; //erases the old table so a new one can be drawn
                     console.log('DEBUG: getUserInput()');
-                    var columns = document.getElementById("columns").value;
-                    console.log('DEBUG: Columns = ' + columns);
-                    var rows = document.getElementById("rows").value;
-                    console.log('DEBUG: Rows = ' + rows);
+                    columns = document.getElementById("columns").value;
+                    rows = document.getElementById("rows").value;
+
                     if (columns < 5 || columns > 20) {
                         var colsInput = document.getElementById("columns");
                         colsInput.value = "";
@@ -62,21 +125,25 @@
                             console.log(rows);
                         }
                     }
-                    console.log('DEBUG: Columns = ' + columns);
-                    console.log('DEBUG: Rows = ' + rows);
+                    console.log('DEBUG: Final Columns = ' + columns);
+                    console.log('DEBUG: Final Rows = ' + rows);
+                    drawTable(rows, columns);
                 }
             </script>
         <!-- div tag for the building the grid -->
         <div id="divTable">
-        <!-- javascript section for grid -->
+        <!-- javascript section for the divTable grid -->
         <script>
             var divTable = document.getElementById('divTable');
             var table_structure;
             var i, j;
+            drawTable(rows, columns);
+
+            function drawTable(num_rows, num_cols) {
             table_structure = '<table border="1" width="100%">';
-            for(i = 0; i < 10; i++) {
+            for(i = 0; i < num_rows; i++) {
                 table_structure += '<tr>';
-                for(j = 0; j < 10; j++) {
+                for(j = 0; j < num_cols; j++) {
                     table_structure += '<td height="25" width="25">';
                 }
                 table_structure += '</td>';
@@ -85,8 +152,8 @@
             divTable.innerHTML = table_structure;
 
             //Move counter metrics:
-            var cell_touch_count = 0.0;
-            var max_cell_touches = 1000001;
+            cell_touch_count = 0.0;
+            max_cell_touches = 1000001;
             /*
             missing metrics (as of 8/24/17 @ 7:52am):
                 - min. times a particular cell was touched
@@ -94,19 +161,22 @@
                 - number of times each particular cell was touched
             */
 
-            //Game board position GLOBAL vars:
-            var original_square_pos = 90;
-            var previous_square_pos;
-            var new_square_pos;
+            //Game board position vars:
+            original_square_pos = ((rows * columns) - (columns));
+            console.log('DEBUG: drawTable(num_rows, num_cols');
+            console.log(original_square_pos);
 
-            var td = document.getElementsByTagName("td")[original_square_pos]; //get the 90th (bottom left corner) <td>
-            var att = document.createAttribute("class"); //creates a class attribute
+            td = document.getElementsByTagName("td")[original_square_pos]; //get the 90th (bottom left corner) <td>
+            att = document.createAttribute("class"); //creates a class attribute
             att.value = "circle"; //sets the value of the class attribute
             td.setAttributeNode(att);
+            }
 
             //checkForWinner(position) called on each directional move:
             function checkForWinnerOnBtnClick(position) {
-                if (position == 9) {
+                console.log(columns);
+                console.log(position);
+                if (position == (columns-1)) {
                     var button = document.getElementsByTagName("button")[0];
                     button.hidden = true;
                     document.getElementById('game_result').innerHTML = "You Win!!!"
@@ -132,13 +202,13 @@
                 moveFunction();
                 var showSim = setTimeout(function(){ gameSimulator(); }, 200);
                 
-                if (new_square_pos == 9 || cell_touch_count > 1000000) {
+                if ((new_square_pos == (columns-1)) || cell_touch_count > 1000000) {
                     clearTimeout(showSim);
                     var mv_button = document.getElementsByTagName("button")[0];
                     var sim_button = document.getElementsByTagName("button")[1];
                     mv_button.hidden = true;
                     sim_button.hidden = true;
-                    if (new_square_pos == 9) {
+                    if (new_square_pos == (columns-1)) {
                         document.getElementById('result_stats').innerHTML = "GAME RESULT = Marker Finish: WINNER";
                         document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
                         document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
@@ -146,8 +216,8 @@
                     document.getElementById('result_stats').innerHTML = "GAME RESULT = 1,000,001 Touches: LOSER";
                     document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
                     document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
-                    }
                     console.log('DEBUG: ' + 'touch_count parameter = ' + cell_touch_count + ' YOU LOSE!');
+                    }
                 }
             }
 
@@ -155,28 +225,39 @@
             function moveFunction() {
                 //Place the marker in bottom-left corner to begin the game:
                 console.log('cell touch count = ' + cell_touch_count);
-                if (cell_touch_count < 1) {
+                if (cell_touch_count < 1 && tableReDrawn == false) {
                     previous_square_pos = original_square_pos; //set this for the first turn
+                    console.log('Original table; tableReDrawn == false');
                 } else {
-                    previous_square_pos = new_square_pos;
+                    console.log('DEBUG: Cell Count > 1 || tableReDrawn == false');
+                    previous_square_pos = new_square_pos; //when tableReDrawn == true it clips this logic on the way back if 
+                                                          //if cell_touch_count > 1
                 }
+
+                //if you are re-sizing the table then you will need  to reset the previous_square_pos:
+                if (cell_touch_count < 1 && tableReDrawn == true) {
+                    console.log('original_square_pos = ' + original_square_pos);
+                    console.log('A new table; tableReDrawn == true AND cell_count < 1');
+                    previous_square_pos = original_square_pos;
+                }
+
                 console.log('DEBUG: previous_sqaure_pos = ' + previous_square_pos);
-                
-                console.log('DEBUG: moveFunction() executed')
+                console.log('DEBUG: moveFunction() executed');
                 //Randomly choose a direction: up, down, left, or right:
                 var D = Math.floor((Math.random() * 4) + 1);
                 //Randomly choose a number of steps: 0, 1, or 2:
                 var N = Math.floor((Math.random() * 3) + 0);
+                console.log('DEBUG: D = ' + D + ' and N = ' + N);
 
-                console.log('DEBUG: D= ' + D + ' and N= ' + N);
-                
+                console.log('DEBUG: new_square_pos = ' + previous_square_pos);
+
                 switch(D) {
                     case 1:
                         new_square_pos = previous_square_pos-(N*10);
                         document.getElementsByTagName("td")[previous_square_pos].removeAttribute("class");
                         console.log('DEBUG: new_sqaure_pos = ' + new_square_pos);
                         
-                        if (new_square_pos >= 0 && new_square_pos < 100) {
+                        if (new_square_pos >= 0 && new_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
@@ -201,7 +282,7 @@
                         previous_square_pos = new_square_pos-(N*10);
                         document.getElementsByTagName("td")[previous_square_pos].removeAttribute("class");
 
-                        if (new_square_pos >= 0 && new_square_pos < 100) {
+                        if (new_square_pos >= 0 && new_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
@@ -209,7 +290,6 @@
                             att.value = "circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         } else {
-                            // don't move
                             // don't move
                             console.log('DEBUG: location ' + new_square_pos + ' out of bounds');
                             new_square_pos = previous_square_pos; //reset so no move on o.o.b.
@@ -228,7 +308,7 @@
                         document.getElementsByTagName("td")[previous_square_pos].removeAttribute("class");
                         console.log('DEBUG: new_sqaure_pos = ' + new_square_pos);
 
-                        if (new_square_pos >= 0 && new_square_pos < 100) {
+                        if (new_square_pos >= 0 && new_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
@@ -254,7 +334,7 @@
                         document.getElementsByTagName("td")[previous_square_pos].removeAttribute("class");
                         console.log('DEBUG: new_sqaure_pos = ' + new_square_pos);
 
-                        if (new_square_pos >= 0 && new_square_pos < 100) {
+                        if (new_square_pos >= 0 && new_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
