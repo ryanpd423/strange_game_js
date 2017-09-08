@@ -3,13 +3,11 @@
 CS 4500
 Student ID: 12171429
 Student SSO: rpd4g5
-Hw2
+Hw3
 ** - Note to Dr. Miller - **: 
-I did not have a
-partner on this assignment
-because I missed class on
-Monday due to the Wake, and
-was not assigned a partner.
+Partners for this assignment were:
+Nick Nesbit
+Austin Hester
 -->
 
 <!-- This game is an HTML, CSS, and JavaScript
@@ -101,7 +99,24 @@ Thanks and enjoy the code!
                 var new_square_pos;
                 var td;
                 var att;
+                //cell object:
+                var cell = {
+                            count: 0
+                            };
+                //array for grid to hold the cell objects:
+                var grid_array = [];
+                //initialize the grid full of cell objects:
+                for (i = 0; i < (rows * columns); i++) {
+                    cell_obj = {
+                                count: 0
+                                };
+                    grid_array[i] = cell_obj;
+                }
 
+                grid_array[12].count = 15;
+
+                console.log('cell objs in the grid = ' + grid_array.length);
+        
                 function getUserInput() {
                     tableReDrawn = true;
                     table_structure.value = ""; //erases the old table so a new one can be drawn
@@ -128,7 +143,19 @@ Thanks and enjoy the code!
                     console.log('DEBUG: Final Columns = ' + columns);
                     console.log('DEBUG: Final Rows = ' + rows);
                     drawTable(rows, columns);
-                }
+
+                    //cell object:
+                    var cell = {
+                                count: 0
+                                };
+                    //array for grid to hold the cell objects:
+                    var grid_array = [];
+                    //initialize the grid full of cell objects:
+                    for (i = 0; i < (rows * columns); i++) {
+                        grid_array[i] = cell;
+                    }
+                    console.log('cell objs in the grid = ' + grid_array.length);
+                    }
             </script>
         <!-- div tag for the building the grid -->
         <div id="divTable">
@@ -161,6 +188,12 @@ Thanks and enjoy the code!
                 - number of times each particular cell was touched
             */
 
+            //initialize the cell counter of cell to zero:
+            for (i = 0; i < (rows * columns); i++) {
+                td = document.getElementsByTagName("td")[i];
+                td.innerHTML = 0;
+            }
+
             //Game board position vars:
             original_square_pos = ((rows * columns) - (columns));
             console.log('DEBUG: drawTable(num_rows, num_cols');
@@ -170,6 +203,7 @@ Thanks and enjoy the code!
             att = document.createAttribute("class"); //creates a class attribute
             att.value = "circle"; //sets the value of the class attribute
             td.setAttributeNode(att);
+
             }
 
             //checkForWinner(position) called on each directional move:
@@ -200,7 +234,7 @@ Thanks and enjoy the code!
             */
             function gameSimulator() {
                 moveFunction();
-                var showSim = setTimeout(function(){ gameSimulator(); }, 200);
+                var showSim = setTimeout(function(){ gameSimulator(); }, 90);
                 
                 if ((new_square_pos == (columns-1)) || cell_touch_count > 1000000) {
                     clearTimeout(showSim);
@@ -209,6 +243,7 @@ Thanks and enjoy the code!
                     mv_button.hidden = true;
                     sim_button.hidden = true;
                     if (new_square_pos == (columns-1)) {
+                        td.innerHTML = grid_array[previous_square_pos].count;
                         document.getElementById('result_stats').innerHTML = "GAME RESULT = Marker Finish: WINNER";
                         document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
                         document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
@@ -243,6 +278,13 @@ Thanks and enjoy the code!
 
                 console.log('DEBUG: previous_sqaure_pos = ' + previous_square_pos);
                 console.log('DEBUG: moveFunction() executed');
+
+                td = document.getElementsByTagName("td")[previous_square_pos]
+
+                grid_array[previous_square_pos].count += 1;
+
+                td.innerHTML = grid_array[previous_square_pos].count;
+  
                 //Randomly choose a direction: up, down, left, or right:
                 var D = Math.floor((Math.random() * 4) + 1);
                 //Randomly choose a number of steps: 0, 1, or 2:
@@ -274,6 +316,7 @@ Thanks and enjoy the code!
                             att.value = "circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
+                        
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
                         checkForWinnerOnBtnClick(new_square_pos);
                         break;
