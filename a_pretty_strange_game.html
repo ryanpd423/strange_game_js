@@ -51,10 +51,21 @@ Thanks and enjoy the code!
         <meta charset="UTF-8">
         <title>A Pretty Strange Game</title>
         <style>
-        td.circle::before{
+        td.red_circle::before{
             content: attr(marker);
             display: block;
-            background: #f00;
+            background:red;
+            width: 10px;
+            height: 10px;
+            line-height:10px;
+            text-align:center;
+            border-radius: 50%;
+            margin:0 auto;
+          }
+          td.blue_circle::before{
+            content: attr(marker);
+            display: block;
+            background: blue;
             width: 10px;
             height: 10px;
             line-height:10px;
@@ -76,6 +87,8 @@ Thanks and enjoy the code!
             <div>
                 <br>
                 <h2 class="enterInput">Enter 5-20 (inclusive) for Columns and Rows:</h2>
+                <h3>Grid cells go top-down left-to-right numerically, with the top-left cell
+                    being "cell #0" and the bottom-right cell being "cell #99"</h3>
             </div>
             Columns:<br>
             <input type="text" id="columns">
@@ -94,11 +107,15 @@ Thanks and enjoy the code!
                 var tableReDrawn = false;
                 var cell_touch_count;
                 var max_cell_touches;
+                var cell_with_max_touches;
+                var cell_with_min_touches;
                 var original_square_pos;
                 var previous_square_pos;
                 var new_square_pos;
                 var td;
                 var att;
+                //min value cells:
+                var mins = [];
                 //cell object:
                 var cell = {
                             count: 0
@@ -112,8 +129,6 @@ Thanks and enjoy the code!
                                 };
                     grid_array[i] = cell_obj;
                 }
-
-                grid_array[12].count = 15;
 
                 console.log('cell objs in the grid = ' + grid_array.length);
         
@@ -181,12 +196,6 @@ Thanks and enjoy the code!
             //Move counter metrics:
             cell_touch_count = 0.0;
             max_cell_touches = 1000001;
-            /*
-            missing metrics (as of 8/24/17 @ 7:52am):
-                - min. times a particular cell was touched
-                - max. times a particular cell was touched
-                - number of times each particular cell was touched
-            */
 
             //initialize the cell counter of cell to zero:
             for (i = 0; i < (rows * columns); i++) {
@@ -195,15 +204,20 @@ Thanks and enjoy the code!
             }
 
             //Game board position vars:
-            original_square_pos = ((rows * columns) - (columns));
+            red_original_square_pos = ((rows * columns) - (columns));
+            blue_original_square_pos = (rows - 1);
             console.log('DEBUG: drawTable(num_rows, num_cols');
-            console.log(original_square_pos);
+            console.log(red_original_square_pos);
+            console.log(blue_original_square_pos);
 
-            td = document.getElementsByTagName("td")[original_square_pos]; //get the 90th (bottom left corner) <td>
-            att = document.createAttribute("class"); //creates a class attribute
-            att.value = "circle"; //sets the value of the class attribute
-            td.setAttributeNode(att);
-
+            td1 = document.getElementsByTagName("td")[red_original_square_pos]; //get the bottom-left corner <td> object
+            td2 = document.getElementsByTagName("td")[blue_original_square_pos]; //get the top-right corner <td> object
+            red_att = document.createAttribute("class"); //creates a class attribute
+            red_att.value = "red_circle"; //sets the value of the class attribute
+            td1.setAttributeNode(red_att); //assigns the attribute to a specific DOM object/HTML element
+            blue_att = document.createAttribute("class"); //creates a class attribute
+            blue_att.value = "blue_circle"; //sets the value of the class attribute
+            td2.setAttributeNode(blue_att); //assigns the attribute to a specific DOM object/HTML element
             }
 
             //checkForWinner(position) called on each directional move:
@@ -237,16 +251,18 @@ Thanks and enjoy the code!
                 var showSim = setTimeout(function(){ gameSimulator(); }, 90);
                 
                 if ((new_square_pos == (columns-1)) || cell_touch_count > 1000000) {
+                    cellTouchCountDeterminer();
                     clearTimeout(showSim);
                     var mv_button = document.getElementsByTagName("button")[0];
                     var sim_button = document.getElementsByTagName("button")[1];
                     mv_button.hidden = true;
                     sim_button.hidden = true;
                     if (new_square_pos == (columns-1)) {
-                        td.innerHTML = grid_array[previous_square_pos].count;
+                        td.innerHTML = 1;
                         document.getElementById('result_stats').innerHTML = "GAME RESULT = Marker Finish: WINNER";
                         document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
                         document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
+                        document.getElementById('cell_with_max_touches').innerHTML = 'Cell w/ Max touches = Cell #' + cell_with_max_touches;
                     } else {
                     document.getElementById('result_stats').innerHTML = "GAME RESULT = 1,000,001 Touches: LOSER";
                     document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
@@ -254,6 +270,35 @@ Thanks and enjoy the code!
                     console.log('DEBUG: ' + 'touch_count parameter = ' + cell_touch_count + ' YOU LOSE!');
                     }
                 }
+            }
+
+            function cellTouchCountDeterminer() {
+                var max = 0;
+                var min = 0;
+                for (var i = 0; i < grid_array.length; i++) {
+                    if (grid_array[i].count > max) {
+                        max = grid_array[i].count;
+                        console.log('i = ' + i);
+                        cell_with_max_touches = i;
+                    }
+                }
+                //Still need to calculate the cell with the minimum touches:
+                console.log('min touches = ' + min);
+                console.log('max touches = ' + max);
+
+                grid_vals_tracker();
+            }
+
+            function grid_vals_tracker() {
+                var array = [];
+                var min_val = 0;
+                var mins_array = [];
+                for (var i = 0; i < grid_array.length; i++) {
+                    array.push = grid_array[i].count;
+                    console.log(array);
+                }
+                min_val = Math.min(array);
+                console.log('array.min = ' + min_val);
             }
 
             //moveFunction() controls the movement logic of the marker on the board:
@@ -304,7 +349,7 @@ Thanks and enjoy the code!
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
-                            att.value = "circle"; //sets the value of the class attribute
+                            att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         } else {
                             //don't move
@@ -313,7 +358,7 @@ Thanks and enjoy the code!
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
-                            att.value = "circle"; //sets the value of the class attribute
+                            att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
                         
@@ -330,7 +375,7 @@ Thanks and enjoy the code!
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
-                            att.value = "circle"; //sets the value of the class attribute
+                            att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         } else {
                             // don't move
@@ -339,7 +384,7 @@ Thanks and enjoy the code!
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
-                            att.value = "circle"; //sets the value of the class attribute
+                            att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
@@ -356,7 +401,7 @@ Thanks and enjoy the code!
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
-                            att.value = "circle"; //sets the value of the class attribute
+                            att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         } else {
                             // don't move
@@ -365,7 +410,7 @@ Thanks and enjoy the code!
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
-                            att.value = "circle"; //sets the value of the class attribute
+                            att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
@@ -382,7 +427,7 @@ Thanks and enjoy the code!
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
-                            att.value = "circle"; //sets the value of the class attribute
+                            att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         } else {
                             // don't move
@@ -391,7 +436,7 @@ Thanks and enjoy the code!
                             cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
-                            att.value = "circle"; //sets the value of the class attribute
+                            att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
@@ -417,6 +462,7 @@ Thanks and enjoy the code!
         <div>
             <h3 id="touch_total"></h3>
             <h3 id="avg_touches_per_cell"></h3>
+            <h3 id="cell_with_max_touches"></h3>
             <h3 id="result_stats"></h3>
         </div>
     </body>
