@@ -115,6 +115,8 @@ Thanks and enjoy the code!
                 var blue_previous_square_pos;
                 var new_blue_square_pos;
                 var new_red_square_pos;
+                var red_marker = "red";
+                var blue_marker = "blue";
                 var td;
                 var att;
                 //min value cells:
@@ -224,14 +226,19 @@ Thanks and enjoy the code!
             }
 
             //checkForWinner(position) called on each directional move:
-            function checkForWinnerOnBtnClick(position) {
+            function checkForWinnerOnBtnClick(markerColor, position) {
                 console.log(columns);
                 console.log(position);
-                if (position == (columns-1)) {
+                if (markerColor == "red" && position == (columns-1)) {
                     var button = document.getElementsByTagName("button")[0];
                     button.hidden = true;
                     document.getElementById('game_result').innerHTML = "You Win!!!"
                     console.log('DEBUG: ' + 'position parameter = ' + position + ' YOU WIN!')
+                } else if (markerColor == "blue" && position == ((rows*columns) - columns)) {
+                    var button = document.getElementsByTagName("button")[0];
+                    button.hidden = true;
+                    document.getElementById('game_result').innerHTML = "You Win!!!"
+                    console.log('DEBUG: ' + 'position parameter = ' + position + ' YOU WIN!') 
                 }
             }
 
@@ -253,7 +260,7 @@ Thanks and enjoy the code!
                 moveRedFunction();
                 var showSim = setTimeout(function(){ gameSimulator(); }, 90);
                 
-                if ((new_red_square_pos == (columns-1)) || (new_blue_square_pos == (rows - 1)) || cell_touch_count > 1000000) {
+                if ((new_red_square_pos == (columns-1)) || (new_blue_square_pos == ((rows * columns) - columns)) || cell_touch_count > 1000000) {
                     cellTouchCountDeterminer();
                     clearTimeout(showSim);
                     var mv_button = document.getElementsByTagName("button")[0];
@@ -266,7 +273,7 @@ Thanks and enjoy the code!
                         document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
                         document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
                         document.getElementById('cell_with_max_touches').innerHTML = 'Cell w/ Max touches = Cell #' + cell_with_max_touches;
-                    } else if (new_blue_square_pos == (rows - 1)) {
+                    } else if (new_blue_square_pos == ((rows*columns) - columns)) {
                         document.getElementById('result_stats').innerHTML = "GAME RESULT = Blue Marker Finish: WINNER";
                         document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
                         document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
@@ -282,7 +289,6 @@ Thanks and enjoy the code!
 
             function cellTouchCountDeterminer() {
                 var max = 0;
-                var min = 0;
                 for (var i = 0; i < grid_array.length; i++) {
                     if (grid_array[i].count > max) {
                         max = grid_array[i].count;
@@ -290,10 +296,7 @@ Thanks and enjoy the code!
                         cell_with_max_touches = i;
                     }
                 }
-                //Still need to calculate the cell with the minimum touches:
-                console.log('min touches = ' + min);
                 console.log('max touches = ' + max);
-
                 grid_vals_tracker();
             }
 
@@ -369,7 +372,7 @@ Thanks and enjoy the code!
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
-                        checkForWinnerOnBtnClick(new_red_square_pos);
+                        checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                     case 2:
                         new_red_square_pos = red_previous_square_pos+(N*10);
@@ -393,7 +396,7 @@ Thanks and enjoy the code!
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
-                        checkForWinnerOnBtnClick(new_red_square_pos);
+                        checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                     case 3:
                         new_red_square_pos = red_previous_square_pos-(N*1);
@@ -418,7 +421,7 @@ Thanks and enjoy the code!
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
-                        checkForWinnerOnBtnClick(new_red_square_pos);
+                        checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                     case 4:
                         new_red_square_pos = red_previous_square_pos+(N*1);
@@ -443,7 +446,7 @@ Thanks and enjoy the code!
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
-                        checkForWinnerOnBtnClick(new_red_square_pos);
+                        checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                 }
                 moveBlueFunction();
@@ -509,7 +512,7 @@ Thanks and enjoy the code!
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
-                        checkForWinnerOnBtnClick(new_blue_square_pos);
+                        checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                     case 2:
                         new_blue_square_pos = blue_previous_square_pos+(N*10);
@@ -534,7 +537,7 @@ Thanks and enjoy the code!
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
-                        checkForWinnerOnBtnClick(new_blue_square_pos);
+                        checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                     case 3:
                         new_blue_square_pos = blue_previous_square_pos-(N*1);
@@ -559,7 +562,7 @@ Thanks and enjoy the code!
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
-                        checkForWinnerOnBtnClick(new_blue_square_pos);
+                        checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                     case 4:
                         new_blue_square_pos = blue_previous_square_pos+(N*1);
@@ -584,7 +587,7 @@ Thanks and enjoy the code!
                             td.setAttributeNode(att);
                         }
                         checkForMaxTouchesOnBtnClick(cell_touch_count);
-                        checkForWinnerOnBtnClick(new_blue_square_pos);
+                        checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                 }
             }
