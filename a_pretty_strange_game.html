@@ -105,7 +105,8 @@ Thanks and enjoy the code!
                 var columns = 10;
                 var rows = 10;
                 var tableReDrawn = false;
-                var cell_touch_count;
+                var red_cell_touch_count;
+                var blue_cell_touch_count;
                 var max_cell_touches;
                 var cell_with_max_touches;
                 var cell_with_min_touches;
@@ -199,7 +200,8 @@ Thanks and enjoy the code!
             divTable.innerHTML = table_structure;
 
             //Move counter metrics:
-            cell_touch_count = 0.0;
+            red_cell_touch_count = 0.0;
+            blue_cell_touch_count = 0.0;
             max_cell_touches = 1000001;
 
             //initialize the cell counter of cell to zero:
@@ -258,9 +260,9 @@ Thanks and enjoy the code!
             */
             function gameSimulator() {
                 moveRedFunction();
-                var showSim = setTimeout(function(){ gameSimulator(); }, 90);
+                var showSim = setTimeout(gameSimulator, 200);
                 
-                if ((new_red_square_pos == (columns-1)) || (new_blue_square_pos == ((rows * columns) - columns)) || cell_touch_count > 1000000) {
+                if ((new_red_square_pos == (columns-1)) || (new_blue_square_pos == ((rows * columns) - columns)) || red_cell_touch_count > 1000000 || blue_cell_touch_count > 1000000) {
                     cellTouchCountDeterminer();
                     clearTimeout(showSim);
                     var mv_button = document.getElementsByTagName("button")[0];
@@ -270,19 +272,21 @@ Thanks and enjoy the code!
                     if (new_red_square_pos == (columns-1)) {
                         td.innerHTML = 1;
                         document.getElementById('result_stats').innerHTML = "GAME RESULT = Red Marker Finish: WINNER";
-                        document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
-                        document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
+                        document.getElementById('touch_total').innerHTML = 'Total Cell Touches by Red Marker = ' + red_cell_touch_count;
+                        document.getElementById('blue_red_touch_total').innerHTML = 'Total Cell Touches of both markers combined = ' + (blue_cell_touch_count + red_cell_touch_count);
+                        document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (red_cell_touch_count/100.0);
                         document.getElementById('cell_with_max_touches').innerHTML = 'Cell w/ Max touches = Cell #' + cell_with_max_touches;
                     } else if (new_blue_square_pos == ((rows*columns) - columns)) {
                         document.getElementById('result_stats').innerHTML = "GAME RESULT = Blue Marker Finish: WINNER";
-                        document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
-                        document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
+                        document.getElementById('blue_red_touch_total').innerHTML = 'Total Cell Touches of both markers combined = ' + (blue_cell_touch_count + red_cell_touch_count);
+                        document.getElementById('touch_total').innerHTML = 'Total Cell Touches by Blue Markers = ' + blue_cell_touch_count;
+                        document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (blue_cell_touch_count/100.0);
                         document.getElementById('cell_with_max_touches').innerHTML = 'Cell w/ Max touches = Cell #' + cell_with_max_touches;
                     } else {
                     document.getElementById('result_stats').innerHTML = "GAME RESULT = 1,000,001 Touches: LOSER";
-                    document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
-                    document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
-                    console.log('DEBUG: ' + 'touch_count parameter = ' + cell_touch_count + ' YOU LOSE!');
+                    // document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
+                    // document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
+                    // console.log('DEBUG: ' + 'touch_count parameter = ' + cell_touch_count + ' YOU LOSE!');
                     }
                 }
             }
@@ -315,19 +319,19 @@ Thanks and enjoy the code!
             //moveFunction() controls the movement logic of the marker on the board:
             function moveRedFunction() {
                 //Place the marker in bottom-left corner to begin the game:
-                console.log('cell touch count = ' + cell_touch_count);
-                if (cell_touch_count < 1 && tableReDrawn == false) {
+                console.log('red_cell touch count = ' + red_cell_touch_count);
+                if (red_cell_touch_count < 1 && tableReDrawn == false) {
                     red_previous_square_pos = red_original_square_pos; //set this for the first turn
                     console.log('Original table; tableReDrawn == false');
                 } else {
-                    console.log('DEBUG: Cell Count > 1 || tableReDrawn == false');
+                    console.log('DEBUG: Red Cell Count > 1 || tableReDrawn == false');
                     red_previous_square_pos = new_red_square_pos; //before the next move starts set the previous position var to the most recent new sqaure pos value
                 }
 
                 //If you are re-sizing the table then you will need  to reset the previous_square_pos back to zero:
-                if (cell_touch_count < 1 && tableReDrawn == true) {
-                    console.log('original_square_pos = ' + original_square_pos);
-                    console.log('A new table; tableReDrawn == true AND cell_count < 1');
+                if (red_cell_touch_count < 1 && tableReDrawn == true) {
+                    console.log('red_original_square_pos = ' + red_original_square_pos);
+                    console.log('A new table; tableReDrawn == true AND red_cell_count < 1');
                     red_previous_square_pos = red_original_square_pos;
                 }
 
@@ -356,7 +360,7 @@ Thanks and enjoy the code!
                         
                         if (new_red_square_pos >= 0 && new_red_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
-                            cell_touch_count += 1;
+                            red_cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_red_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "red_circle"; //sets the value of the class attribute
@@ -365,13 +369,13 @@ Thanks and enjoy the code!
                             //don't move
                             console.log('DEBUG: location ' + new_red_square_pos + ' out of bounds');
                             new_red_square_pos = red_previous_square_pos; //reset so no move on o.o.b.
-                            cell_touch_count += 1;
+                            red_cell_touch_count += 1; //still must count non-move touches...
                             td = document.getElementsByTagName("td")[new_red_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForMaxTouchesOnBtnClick(red_cell_touch_count);
                         checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                     case 2:
@@ -380,7 +384,7 @@ Thanks and enjoy the code!
 
                         if (new_red_square_pos >= 0 && new_red_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
-                            cell_touch_count += 1;
+                            red_cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_red_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "red_circle"; //sets the value of the class attribute
@@ -389,13 +393,13 @@ Thanks and enjoy the code!
                             // don't move
                             console.log('DEBUG: location ' + new_red_square_pos + ' out of bounds');
                             new_red_square_pos = red_previous_square_pos; //reset so no move on o.o.b.
-                            cell_touch_count += 1;
+                            red_cell_touch_count += 1; //still must count non-move touches...
                             td = document.getElementsByTagName("td")[new_red_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForMaxTouchesOnBtnClick(red_cell_touch_count);
                         checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                     case 3:
@@ -405,7 +409,7 @@ Thanks and enjoy the code!
 
                         if (new_red_square_pos >= 0 && new_red_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
-                            cell_touch_count += 1;
+                            red_cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_red_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "red_circle"; //sets the value of the class attribute
@@ -414,13 +418,13 @@ Thanks and enjoy the code!
                             // don't move
                             console.log('DEBUG: location ' + new_red_square_pos + ' out of bounds');
                             new_red_square_pos = red_previous_square_pos; //reset so no move on o.o.b.
-                            cell_touch_count += 1;
+                            red_cell_touch_count += 1; //still must count non-move touches...
                             td = document.getElementsByTagName("td")[new_red_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForMaxTouchesOnBtnClick(red_cell_touch_count);
                         checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                     case 4:
@@ -430,7 +434,7 @@ Thanks and enjoy the code!
 
                         if (new_red_square_pos >= 0 && new_red_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
-                            cell_touch_count += 1;
+                            red_cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_red_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "red_circle"; //sets the value of the class attribute
@@ -439,40 +443,40 @@ Thanks and enjoy the code!
                             // don't move
                             console.log('DEBUG: location ' + new_red_square_pos + ' out of bounds');
                             new_red_square_pos = red_previous_square_pos; //reset so no move on o.o.b.
-                            cell_touch_count += 1;
+                            red_cell_touch_count += 1; //still must count non-move touches...
                             td = document.getElementsByTagName("td")[new_red_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForMaxTouchesOnBtnClick(red_cell_touch_count);
                         checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                 }
-                moveBlueFunction();
+                setTimeout(moveBlueFunction, 100);
             }
 
-            //moveFunction() controls the movement logic of the marker on the board:
+            //moveBlueFunction() controls the movement logic of the blue marker on the board:
             function moveBlueFunction() {
-                //Place the marker in bottom-left corner to begin the game:
-                console.log('cell touch count = ' + cell_touch_count);
-                if (cell_touch_count < 2 && tableReDrawn == false) {
+                //Place the marker in the top-right corner of the board to begin the game:
+                console.log('blue_cell_touch_count = ' + blue_cell_touch_count);
+                if (blue_cell_touch_count < 1 && tableReDrawn == false) {
                     blue_previous_square_pos = blue_original_square_pos; //set this for the first turn
                     console.log('Original table; tableReDrawn == false');
                 } else {
-                    console.log('DEBUG: Cell Count > 1 || tableReDrawn == false');
+                    console.log('DEBUG: Blue Cell Count > 1 || tableReDrawn == false');
                     blue_previous_square_pos = new_blue_square_pos; //before the next move starts set the previous position var to the most recent new sqaure pos value
                 }
 
                 //If you are re-sizing the table then you will need  to reset the previous_square_pos back to zero:
-                if (cell_touch_count < 2 && tableReDrawn == true) {
-                    console.log('original_square_pos = ' + original_square_pos);
+                if (blue_cell_touch_count < 1 && tableReDrawn == true) {
+                    console.log('blue_original_square_pos = ' + blue_original_square_pos);
                     console.log('A new table; tableReDrawn == true AND cell_count < 1');
                     blue_previous_square_pos = blue_original_square_pos;
                 }
 
                 console.log('DEBUG: blue_previous_sqaure_pos = ' + blue_previous_square_pos);
-                console.log('DEBUG: moveFunction() executed');
+                console.log('DEBUG: moveBlueFunction() executed');
 
                 td = document.getElementsByTagName("td")[blue_previous_square_pos];
 
@@ -480,7 +484,7 @@ Thanks and enjoy the code!
 
                 td.innerHTML = grid_array[blue_previous_square_pos].count;
   
-                //Randomly choose a direction: up, down, left, or right:
+                //Randomly choose a direction: up (1), down (2), left (3), or right (4):
                 var D = Math.floor((Math.random() * 4) + 1);
                 //Randomly choose a number of steps: 0, 1, or 2:
                 var N = Math.floor((Math.random() * 3) + 0);
@@ -496,7 +500,7 @@ Thanks and enjoy the code!
                         
                         if (new_blue_square_pos >= 0 && new_blue_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
-                            cell_touch_count += 1;
+                            blue_cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_blue_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "blue_circle"; //sets the value of the class attribute
@@ -505,13 +509,13 @@ Thanks and enjoy the code!
                             //don't move
                             console.log('DEBUG: location ' + new_blue_square_pos + ' out of bounds');
                             new_blue_square_pos = blue_previous_square_pos; //reset so no move on o.o.b.
-                            cell_touch_count += 1;
+                            blue_cell_touch_count += 1; //still must count non-move touches..
                             td = document.getElementsByTagName("td")[new_blue_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForMaxTouchesOnBtnClick(blue_cell_touch_count);
                         checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                     case 2:
@@ -521,7 +525,7 @@ Thanks and enjoy the code!
 
                         if (new_blue_square_pos >= 0 && new_blue_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
-                            cell_touch_count += 1;
+                            blue_cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_blue_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "blue_circle"; //sets the value of the class attribute
@@ -530,13 +534,13 @@ Thanks and enjoy the code!
                             // don't move
                             console.log('DEBUG: location ' + new_blue_square_pos + ' out of bounds');
                             new_blue_square_pos = blue_previous_square_pos; //reset so no move on o.o.b.
-                            cell_touch_count += 1;
+                            blue_cell_touch_count += 1; //still must count non-move touches...
                             td = document.getElementsByTagName("td")[new_blue_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForMaxTouchesOnBtnClick(blue_cell_touch_count);
                         checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                     case 3:
@@ -546,7 +550,7 @@ Thanks and enjoy the code!
 
                         if (new_blue_square_pos >= 0 && new_blue_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
-                            cell_touch_count += 1;
+                            blue_cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_blue_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "blue_circle"; //sets the value of the class attribute
@@ -555,13 +559,13 @@ Thanks and enjoy the code!
                             // don't move
                             console.log('DEBUG: location ' + new_blue_square_pos + ' out of bounds');
                             new_blue_square_pos = blue_previous_square_pos; //reset so no move on o.o.b.
-                            cell_touch_count += 1;
+                            blue_cell_touch_count += 1; //still must count non-move touches...
                             td = document.getElementsByTagName("td")[new_blue_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForMaxTouchesOnBtnClick(blue_cell_touch_count);
                         checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                     case 4:
@@ -571,7 +575,7 @@ Thanks and enjoy the code!
 
                         if (new_blue_square_pos >= 0 && new_blue_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
-                            cell_touch_count += 1;
+                            blue_cell_touch_count += 1;
                             td = document.getElementsByTagName("td")[new_blue_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "blue_circle"; //sets the value of the class attribute
@@ -580,13 +584,13 @@ Thanks and enjoy the code!
                             // don't move
                             console.log('DEBUG: location ' + new_blue_square_pos + ' out of bounds');
                             new_blue_square_pos = blue_previous_square_pos; //reset so no move on o.o.b.
-                            cell_touch_count += 1;
+                            blue_cell_touch_count += 1; //still must count non-move touches...
                             td = document.getElementsByTagName("td")[new_blue_square_pos];
                             att = document.createAttribute("class"); //creates a class attribute
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(cell_touch_count);
+                        checkForMaxTouchesOnBtnClick(blue_cell_touch_count);
                         checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                 }
@@ -608,6 +612,7 @@ Thanks and enjoy the code!
         <!-- game stats -->
         <div>
             <h3 id="touch_total"></h3>
+            <h3 id="blue_red_touch_total"></h3>
             <h3 id="avg_touches_per_cell"></h3>
             <h3 id="cell_with_max_touches"></h3>
             <h3 id="result_stats"></h3>
