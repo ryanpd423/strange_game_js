@@ -133,7 +133,8 @@ Thanks and enjoy the code!
                 for (i = 0; i < (rows * columns); i++) {
                     cell_obj = {
                                 count: 0,
-                                color: ""
+                                red_color:  0, //set to 1 once a cell has been landed on and then set back to 0 when that cell is left behind
+                                blue_color: 0, //set to 1 once a cell has been landed on and then set back to 0 when that cell is left behind
                                 };
                     grid_array[i] = cell_obj;
                 }
@@ -202,18 +203,15 @@ Thanks and enjoy the code!
                 }
                 table_structure += '</table>';
                 divTable.innerHTML = table_structure;
-
                 //Move counter metrics:
                 red_cell_touch_count = 0.0;
                 blue_cell_touch_count = 0.0;
                 max_cell_touches = 1000001;
-
                 //initialize the cell counter of cell to zero:
                 for (i = 0; i < (rows * columns); i++) {
                     td = document.getElementsByTagName("td")[i];
                     td.innerHTML = 0;
                 }
-
                 //Game board position vars:
                 red_original_square_pos = ((rows * columns) - (columns));
                 blue_original_square_pos = (columns - 1);
@@ -231,7 +229,6 @@ Thanks and enjoy the code!
                 td2.setAttributeNode(blue_att); //assigns the attribute to a specific DOM object/HTML element
             }
 
-
             /*gameSimulator() calls the moveFunction() and then itself is 
             called recursively by the setTimeout function until a conditional
             is met at which point the interval is cleared and the sim stops:
@@ -239,27 +236,34 @@ Thanks and enjoy the code!
             function gameSimulator() {
                 console.log('this should not execute after a win!!!')
                 moveRedFunction();
-                var waitBlue = setTimeout(moveBlueFunction, 200);
+                var waitBlue = setTimeout(moveBlueFunction, 100);
                 var showSim = setTimeout(gameSimulator, 500);
                 //Delay a recursive call to gameSimulator() for n secs so it can first check
                 //the condition below:
                 if ((new_red_square_pos == (columns-1)) || (new_blue_square_pos == ((rows * columns) - columns))
                    || red_cell_touch_count > 1000000 || blue_cell_touch_count > 1000000) {
-                    cellTouchCountDeterminer();
                     clearTimeout(showSim);
                     clearTimeout(waitBlue);
+                    cellTouchCountDeterminer();
                     var mv_button = document.getElementsByTagName("button")[0];
                     var sim_button = document.getElementsByTagName("button")[1];
                     mv_button.hidden = true;
                     sim_button.hidden = true;
                     if (new_red_square_pos == (columns-1)) {;
-                        td.innerHTML = 1;
                         document.getElementById('result_stats').innerHTML = "GAME RESULT = Red Marker Finish: WINNER";
                         document.getElementById('touch_total').innerHTML = 'Total Cell Touches by Red Marker = ' + red_cell_touch_count;
                         document.getElementById('blue_red_touch_total').innerHTML = 'Total Cell Touches of both markers combined = ' + (blue_cell_touch_count + red_cell_touch_count);
                         document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (red_cell_touch_count/100.0);
                         document.getElementById('cell_with_max_touches').innerHTML = 'Cell w/ Max touches = Cell #' + cell_with_max_touches;
                     } else if (new_blue_square_pos == ((rows*columns) - columns)) {
+                        //redraw the blue marker in case the moveRedFunction 
+                        //gets called again (this is an accident/bug that I need
+                        //spend some time diagnosing - - has to do with procedural
+                        //nature of the call stack of this function and program):
+                        td = document.getElementsByTagName("td")[new_blue_square_pos];
+                        att = document.createAttribute("class"); //creates a class attribute
+                        att.value = "blue_circle"; //sets the value of the class attribute
+                        td.setAttributeNode(att);
                         document.getElementById('result_stats').innerHTML = "GAME RESULT = Blue Marker Finish: WINNER";
                         document.getElementById('blue_red_touch_total').innerHTML = 'Total Cell Touches of both markers combined = ' + (blue_cell_touch_count + red_cell_touch_count);
                         document.getElementById('touch_total').innerHTML = 'Total Cell Touches by Blue Markers = ' + blue_cell_touch_count;
@@ -267,9 +271,9 @@ Thanks and enjoy the code!
                         document.getElementById('cell_with_max_touches').innerHTML = 'Cell w/ Max touches = Cell #' + cell_with_max_touches;
                     } else {
                     document.getElementById('result_stats').innerHTML = "GAME RESULT = 1,000,001 Touches: LOSER";
-                    // document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
-                    // document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
-                    // console.log('DEBUG: ' + 'touch_count parameter = ' + cell_touch_count + ' YOU LOSE!');
+                    document.getElementById('touch_total').innerHTML = 'Total Cell Touches = ' + cell_touch_count;
+                    document.getElementById('avg_touches_per_cell').innerHTML = 'Avg. Touches Per Cell = ' + (cell_touch_count/100.0);
+                    console.log('DEBUG: ' + 'touch_count parameter = ' + cell_touch_count + ' YOU LOSE!');
                     }
                 }
             }
@@ -305,6 +309,44 @@ Thanks and enjoy the code!
                 console.log('array.min = ' + min_val);
             }
 
+            function checkTheRedCell() {
+                if (grid_array[new_red_square_pos].blue_color == 0) {
+                    //color ("occupy") the cell if it has no occupant:
+                    grid_array[new_red_square_pos].red_color = 1;
+                    console.log('red cell occupant code = red');
+                } else {
+                    //bounce back home if .blue_color == 1 already:
+                    console.log('red cell occupant code = BLUEEEEEEEEEE > Go home red!');
+                    document.getElementsByTagName("td")[new_red_square_pos].removeAttribute("class");
+                    red_cell_touch_count += 1;
+                    new_red_square_pos = (rows*columns)-columns;
+                    td = document.getElementsByTagName("td")[new_red_square_pos];
+                    att = document.createAttribute("class"); //creates a class attribute
+                    att.value = "red_circle"; //sets the value of the class attribute
+                    td.setAttributeNode(att);
+                    grid_array[new_red_square_pos].red_color = 1; //set home spot to red occupancy
+                }
+            }
+
+            function checkTheBlueCell() {
+                if (grid_array[new_blue_square_pos].red_color == 0) {
+                    //color ("occupy") the cell if it has no occupant:
+                    grid_array[new_blue_square_pos].blue_color = 1;
+                    console.log('blue cell occupant code = blue');
+                } else {
+                    //bounce back home if .red_color == 1 already:
+                    console.log('blue cell occupant code = REEEEDDDDDDDD > Go home blue!');
+                    document.getElementsByTagName("td")[new_blue_square_pos].removeAttribute("class");
+                    blue_cell_touch_count += 1;
+                    new_blue_square_pos = columns-1;
+                    td = document.getElementsByTagName("td")[new_blue_square_pos];
+                    att = document.createAttribute("class"); //creates a class attribute
+                    att.value = "blue_circle"; //sets the value of the class attribute
+                    td.setAttributeNode(att);
+                    grid_array[new_blue_square_pos].blue_color = 1; //set home spot to blue occupancy
+                }
+            }
+
             //moveFunction() controls the movement logic of the marker on the board:
             function moveRedFunction() {
                 //Place the marker in bottom-left corner to begin the game:
@@ -320,36 +362,29 @@ Thanks and enjoy the code!
                     console.log('DEBUG: Red Cell Count > 1');
                     red_previous_square_pos = new_red_square_pos; //before the next move starts set the previous position var to the most recent new sqaure pos value
                 }
-
                 console.log('DEBUG: red_previous_sqaure_pos = ' + red_previous_square_pos);
-                console.log('DEBUG: moveFunction() executed');
-
+                console.log('DEBUG: moveRedFunction() executed');
                 //Increment the cell object in the grid-array at the 
                 //index that correlates with the position of the marker
                 //on the table:
                 td = document.getElementsByTagName("td")[red_previous_square_pos]
                 grid_array[red_previous_square_pos].count += 1;
                 td.innerHTML = grid_array[red_previous_square_pos].count;
-  
+
                 //Randomly choose a direction: up, down, left, or right:
                 var D = Math.floor((Math.random() * 4) + 1);
                 //Randomly choose a number of steps: 0, 1, or 2:
                 var N = Math.floor((Math.random() * 3) + 0);
                 console.log('DEBUG: D = ' + D + ' and N = ' + N);
 
-                //Need a way to mark a cell as you
-                //land on it then reset it to "" (empty)
-                //as you leave...
-
-                //Then need a way to check a cell's "color status"
-                //after you move on to it and then have that
-                //"color status" determine your next movement
-
                 switch(D) {
                     case 1:
                         new_red_square_pos = red_previous_square_pos-(N*10);
+                        //remove the marker from the previous position:
                         document.getElementsByTagName("td")[red_previous_square_pos].removeAttribute("class");
-                        console.log('DEBUG: new_sqaure_pos = ' + new_red_square_pos);
+                        //clear the previous positions color status ("occupancy"):
+                        grid_array[red_previous_square_pos].red_color = 0;
+                        console.log('DEBUG: new_red_sqaure_pos = ' + new_red_square_pos);
                         
                         if (new_red_square_pos >= 0 && new_red_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
@@ -368,11 +403,16 @@ Thanks and enjoy the code!
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
+                        checkTheRedCell();
                         break;
                     case 2:
                         new_red_square_pos = red_previous_square_pos+(N*10);
+                        //remove the marker from the previous position:
                         document.getElementsByTagName("td")[red_previous_square_pos].removeAttribute("class");
-
+                        //clear the previous positions color status ("occupancy"):
+                        grid_array[red_previous_square_pos].red_color = 0;
+                        console.log('DEBUG: new_red_sqaure_pos = ' + new_red_square_pos);
+                        
                         if (new_red_square_pos >= 0 && new_red_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
                             red_cell_touch_count += 1;
@@ -390,11 +430,15 @@ Thanks and enjoy the code!
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
+                        checkTheRedCell();
                         break;
                     case 3:
                         new_red_square_pos = red_previous_square_pos-(N*1);
+                        //remove the marker from the previous position:
                         document.getElementsByTagName("td")[red_previous_square_pos].removeAttribute("class");
-                        console.log('DEBUG: new_sqaure_pos = ' + new_red_square_pos);
+                        //clear the previous positions color status ("occupancy"):
+                        grid_array[red_previous_square_pos].red_color = 0;
+                        console.log('DEBUG: new_red_sqaure_pos = ' + new_red_square_pos);
 
                         if (new_red_square_pos >= 0 && new_red_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
@@ -413,11 +457,15 @@ Thanks and enjoy the code!
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
+                        checkTheRedCell();
                         break;
                     case 4:
                         new_red_square_pos = red_previous_square_pos+(N*1);
+                        //remove the marker from the previous position:
                         document.getElementsByTagName("td")[red_previous_square_pos].removeAttribute("class");
-                        console.log('DEBUG: new_sqaure_pos = ' + new_red_square_pos);
+                        //clear the previous positions color status ("occupancy"):
+                        grid_array[red_previous_square_pos].red_color = 0;
+                        console.log('DEBUG: new_red_sqaure_pos = ' + new_red_square_pos);
 
                         if (new_red_square_pos >= 0 && new_red_square_pos < (rows * columns)) {
                             //count square touch (add to million count for analytics)
@@ -436,6 +484,7 @@ Thanks and enjoy the code!
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
+                        checkTheRedCell();
                         break;
                 }
             }
@@ -472,7 +521,10 @@ Thanks and enjoy the code!
                 switch(D) {
                     case 1:
                         new_blue_square_pos = blue_previous_square_pos-(N*10);
+                        //remove the marker from the previous position:
                         document.getElementsByTagName("td")[blue_previous_square_pos].removeAttribute("class");
+                        //clear the previous positions color status ("occupancy"):
+                        grid_array[blue_previous_square_pos].blue_color = 0;
                         console.log('DEBUG: new_blue_sqaure_pos = ' + new_blue_square_pos);
                         
                         if (new_blue_square_pos >= 0 && new_blue_square_pos < (rows * columns)) {
@@ -492,10 +544,14 @@ Thanks and enjoy the code!
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
+                        checkTheBlueCell();
                         break;
                     case 2:
                         new_blue_square_pos = blue_previous_square_pos+(N*10);
+                        //remove the marker from the previous position:
                         document.getElementsByTagName("td")[blue_previous_square_pos].removeAttribute("class");
+                        //clear the previous positions color status ("occupancy"):
+                        grid_array[blue_previous_square_pos].blue_color = 0;
                         console.log('DEBUG: new_blue_sqaure_pos = ' + new_blue_square_pos);
 
                         if (new_blue_square_pos >= 0 && new_blue_square_pos < (rows * columns)) {
@@ -515,10 +571,14 @@ Thanks and enjoy the code!
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
+                        checkTheBlueCell();
                         break;
                     case 3:
                         new_blue_square_pos = blue_previous_square_pos-(N*1);
+                        //remove the marker from the previous position:
                         document.getElementsByTagName("td")[blue_previous_square_pos].removeAttribute("class");
+                        //clear the previous positions color status ("occupancy"):
+                        grid_array[blue_previous_square_pos].blue_color = 0;
                         console.log('DEBUG: new_blue_sqaure_pos = ' + new_blue_square_pos);
 
                         if (new_blue_square_pos >= 0 && new_blue_square_pos < (rows * columns)) {
@@ -538,10 +598,14 @@ Thanks and enjoy the code!
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
+                        checkTheBlueCell();
                         break;
                     case 4:
                         new_blue_square_pos = blue_previous_square_pos+(N*1);
+                        //remove the marker from the previous position:
                         document.getElementsByTagName("td")[blue_previous_square_pos].removeAttribute("class");
+                        //clear the previous positions color status ("occupancy"):
+                        grid_array[blue_previous_square_pos].blue_color = 0;
                         console.log('DEBUG: new_blue_sqaure_pos = ' + new_blue_square_pos);
 
                         if (new_blue_square_pos >= 0 && new_blue_square_pos < (rows * columns)) {
@@ -561,6 +625,7 @@ Thanks and enjoy the code!
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
+                        checkTheBlueCell();
                         break;
                 }
             }
