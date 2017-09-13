@@ -87,6 +87,7 @@ Thanks and enjoy the code!
             <div>
                 <br>
                 <h2 class="enterInput">Enter 5-20 (inclusive) for Columns and Rows:</h2>
+                <h2>Refresh the page for a new game</h2>
                 <h3>Grid cells go top-down left-to-right numerically, with the top-left cell
                     being "cell #0" and the bottom-right cell being "cell #99"</h3>
             </div>
@@ -131,12 +132,13 @@ Thanks and enjoy the code!
                 //initialize the grid full of cell objects:
                 for (i = 0; i < (rows * columns); i++) {
                     cell_obj = {
-                                count: 0
+                                count: 0,
+                                color: ""
                                 };
                     grid_array[i] = cell_obj;
                 }
 
-                console.log('cell objs in the grid = ' + grid_array.length);
+                console.log('cell objs in the original 10X10 grid = ' + grid_array.length);
         
                 function getUserInput() {
                     tableReDrawn = true;
@@ -165,9 +167,11 @@ Thanks and enjoy the code!
                     console.log('DEBUG: Final Rows = ' + rows);
                     drawTable(rows, columns);
 
-                    //cell object:
+//MIGHT NOT NEED THE REST OF THIS CODE - - function may stop executing after drawTable:
+                    //recreate the cell object and initialize its count value to be zero:
                     var cell = {
-                                count: 0
+                                count: 0,
+                                color: ""
                                 };
                     //array for grid to hold the cell objects:
                     var grid_array = [];
@@ -188,88 +192,67 @@ Thanks and enjoy the code!
             drawTable(rows, columns);
 
             function drawTable(num_rows, num_cols) {
-            table_structure = '<table border="1" width="100%">';
-            for(i = 0; i < num_rows; i++) {
-                table_structure += '<tr>';
-                for(j = 0; j < num_cols; j++) {
-                    table_structure += '<td height="25" width="25">';
+                table_structure = '<table border="1" width="100%">';
+                for(i = 0; i < num_rows; i++) {
+                    table_structure += '<tr>';
+                    for(j = 0; j < num_cols; j++) {
+                        table_structure += '<td height="25" width="25">';
+                    }
+                    table_structure += '</td>';
                 }
-                table_structure += '</td>';
-            }
-            table_structure += '</table>';
-            divTable.innerHTML = table_structure;
+                table_structure += '</table>';
+                divTable.innerHTML = table_structure;
 
-            //Move counter metrics:
-            red_cell_touch_count = 0.0;
-            blue_cell_touch_count = 0.0;
-            max_cell_touches = 1000001;
+                //Move counter metrics:
+                red_cell_touch_count = 0.0;
+                blue_cell_touch_count = 0.0;
+                max_cell_touches = 1000001;
 
-            //initialize the cell counter of cell to zero:
-            for (i = 0; i < (rows * columns); i++) {
-                td = document.getElementsByTagName("td")[i];
-                td.innerHTML = 0;
-            }
-
-            //Game board position vars:
-            red_original_square_pos = ((rows * columns) - (columns));
-            blue_original_square_pos = (rows - 1);
-            console.log('DEBUG: drawTable(num_rows, num_cols');
-            console.log(red_original_square_pos);
-            console.log(blue_original_square_pos);
-
-            td1 = document.getElementsByTagName("td")[red_original_square_pos]; //get the bottom-left corner <td> object
-            td2 = document.getElementsByTagName("td")[blue_original_square_pos]; //get the top-right corner <td> object
-            red_att = document.createAttribute("class"); //creates a class attribute
-            red_att.value = "red_circle"; //sets the value of the class attribute
-            td1.setAttributeNode(red_att); //assigns the attribute to a specific DOM object/HTML element
-            blue_att = document.createAttribute("class"); //creates a class attribute
-            blue_att.value = "blue_circle"; //sets the value of the class attribute
-            td2.setAttributeNode(blue_att); //assigns the attribute to a specific DOM object/HTML element
-            }
-
-            //checkForWinner(position) called on each directional move:
-            function checkForWinnerOnBtnClick(markerColor, position) {
-                console.log(columns);
-                console.log(position);
-                if (markerColor == "red" && position == (columns-1)) {
-                    var button = document.getElementsByTagName("button")[0];
-                    button.hidden = true;
-                    document.getElementById('game_result').innerHTML = "You Win!!!"
-                    console.log('DEBUG: ' + 'position parameter = ' + position + ' YOU WIN!')
-                } else if (markerColor == "blue" && position == ((rows*columns) - columns)) {
-                    var button = document.getElementsByTagName("button")[0];
-                    button.hidden = true;
-                    document.getElementById('game_result').innerHTML = "You Win!!!"
-                    console.log('DEBUG: ' + 'position parameter = ' + position + ' YOU WIN!') 
+                //initialize the cell counter of cell to zero:
+                for (i = 0; i < (rows * columns); i++) {
+                    td = document.getElementsByTagName("td")[i];
+                    td.innerHTML = 0;
                 }
+
+                //Game board position vars:
+                red_original_square_pos = ((rows * columns) - (columns));
+                blue_original_square_pos = (columns - 1);
+                console.log('DEBUG: drawTable(num_rows, num_cols');
+                console.log(red_original_square_pos);
+                console.log(blue_original_square_pos);
+
+                td1 = document.getElementsByTagName("td")[red_original_square_pos]; //get the bottom-left corner <td> object
+                td2 = document.getElementsByTagName("td")[blue_original_square_pos]; //get the top-right corner <td> object
+                red_att = document.createAttribute("class"); //creates a class attribute
+                red_att.value = "red_circle"; //sets the value of the class attribute
+                td1.setAttributeNode(red_att); //assigns the attribute to a specific DOM object/HTML element
+                blue_att = document.createAttribute("class"); //creates a class attribute
+                blue_att.value = "blue_circle"; //sets the value of the class attribute
+                td2.setAttributeNode(blue_att); //assigns the attribute to a specific DOM object/HTML element
             }
 
-            //checkForMaxTouches(touch_count) called on each directional move:
-            function checkForMaxTouchesOnBtnClick(touch_count) {
-                if (touch_count >= max_cell_touches) {
-                    var button = document.getElementsByTagName("button")[0];
-                    button.hidden = true;
-                    document.getElementById('game_result').innerHTML = "1,000,001 Touches - Game Over!"
-                    console.log('DEBUG: ' + 'touch_count parameter = ' + touch_count + ' YOU LOSE!')
-                }
-            }
 
             /*gameSimulator() calls the moveFunction() and then itself is 
             called recursively by the setTimeout function until a conditional
             is met at which point the interval is cleared and the sim stops:
             */
             function gameSimulator() {
+                console.log('this should not execute after a win!!!')
                 moveRedFunction();
-                var showSim = setTimeout(gameSimulator, 200);
-                
-                if ((new_red_square_pos == (columns-1)) || (new_blue_square_pos == ((rows * columns) - columns)) || red_cell_touch_count > 1000000 || blue_cell_touch_count > 1000000) {
+                var waitBlue = setTimeout(moveBlueFunction, 200);
+                var showSim = setTimeout(gameSimulator, 500);
+                //Delay a recursive call to gameSimulator() for n secs so it can first check
+                //the condition below:
+                if ((new_red_square_pos == (columns-1)) || (new_blue_square_pos == ((rows * columns) - columns))
+                   || red_cell_touch_count > 1000000 || blue_cell_touch_count > 1000000) {
                     cellTouchCountDeterminer();
                     clearTimeout(showSim);
+                    clearTimeout(waitBlue);
                     var mv_button = document.getElementsByTagName("button")[0];
                     var sim_button = document.getElementsByTagName("button")[1];
                     mv_button.hidden = true;
                     sim_button.hidden = true;
-                    if (new_red_square_pos == (columns-1)) {
+                    if (new_red_square_pos == (columns-1)) {;
                         td.innerHTML = 1;
                         document.getElementById('result_stats').innerHTML = "GAME RESULT = Red Marker Finish: WINNER";
                         document.getElementById('touch_total').innerHTML = 'Total Cell Touches by Red Marker = ' + red_cell_touch_count;
@@ -289,6 +272,12 @@ Thanks and enjoy the code!
                     // console.log('DEBUG: ' + 'touch_count parameter = ' + cell_touch_count + ' YOU LOSE!');
                     }
                 }
+            }
+
+            //Allow for a single move...mostly for debugging:
+            function singleMove() {
+                moveRedFunction();
+                setTimeout(moveBlueFunction, 500);
             }
 
             function cellTouchCountDeterminer() {
@@ -323,25 +312,23 @@ Thanks and enjoy the code!
                 if (red_cell_touch_count < 1 && tableReDrawn == false) {
                     red_previous_square_pos = red_original_square_pos; //set this for the first turn
                     console.log('Original table; tableReDrawn == false');
-                } else {
-                    console.log('DEBUG: Red Cell Count > 1 || tableReDrawn == false');
-                    red_previous_square_pos = new_red_square_pos; //before the next move starts set the previous position var to the most recent new sqaure pos value
-                }
-
-                //If you are re-sizing the table then you will need  to reset the previous_square_pos back to zero:
-                if (red_cell_touch_count < 1 && tableReDrawn == true) {
+                } else if (red_cell_touch_count < 1 && tableReDrawn == true) {
                     console.log('red_original_square_pos = ' + red_original_square_pos);
                     console.log('A new table; tableReDrawn == true AND red_cell_count < 1');
                     red_previous_square_pos = red_original_square_pos;
+                } else {
+                    console.log('DEBUG: Red Cell Count > 1');
+                    red_previous_square_pos = new_red_square_pos; //before the next move starts set the previous position var to the most recent new sqaure pos value
                 }
 
                 console.log('DEBUG: red_previous_sqaure_pos = ' + red_previous_square_pos);
                 console.log('DEBUG: moveFunction() executed');
 
+                //Increment the cell object in the grid-array at the 
+                //index that correlates with the position of the marker
+                //on the table:
                 td = document.getElementsByTagName("td")[red_previous_square_pos]
-
                 grid_array[red_previous_square_pos].count += 1;
-
                 td.innerHTML = grid_array[red_previous_square_pos].count;
   
                 //Randomly choose a direction: up, down, left, or right:
@@ -350,7 +337,13 @@ Thanks and enjoy the code!
                 var N = Math.floor((Math.random() * 3) + 0);
                 console.log('DEBUG: D = ' + D + ' and N = ' + N);
 
-                console.log('DEBUG: new_red_square_pos = ' + red_previous_square_pos);
+                //Need a way to mark a cell as you
+                //land on it then reset it to "" (empty)
+                //as you leave...
+
+                //Then need a way to check a cell's "color status"
+                //after you move on to it and then have that
+                //"color status" determine your next movement
 
                 switch(D) {
                     case 1:
@@ -375,8 +368,6 @@ Thanks and enjoy the code!
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(red_cell_touch_count);
-                        checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                     case 2:
                         new_red_square_pos = red_previous_square_pos+(N*10);
@@ -399,8 +390,6 @@ Thanks and enjoy the code!
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(red_cell_touch_count);
-                        checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                     case 3:
                         new_red_square_pos = red_previous_square_pos-(N*1);
@@ -424,8 +413,6 @@ Thanks and enjoy the code!
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(red_cell_touch_count);
-                        checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                     case 4:
                         new_red_square_pos = red_previous_square_pos+(N*1);
@@ -449,39 +436,31 @@ Thanks and enjoy the code!
                             att.value = "red_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(red_cell_touch_count);
-                        checkForWinnerOnBtnClick(red_marker, new_red_square_pos);
                         break;
                 }
-                setTimeout(moveBlueFunction, 100);
             }
 
             //moveBlueFunction() controls the movement logic of the blue marker on the board:
             function moveBlueFunction() {
-                //Place the marker in the top-right corner of the board to begin the game:
+                //Place the marker in bottom-left corner to begin the game:
                 console.log('blue_cell_touch_count = ' + blue_cell_touch_count);
                 if (blue_cell_touch_count < 1 && tableReDrawn == false) {
                     blue_previous_square_pos = blue_original_square_pos; //set this for the first turn
                     console.log('Original table; tableReDrawn == false');
-                } else {
-                    console.log('DEBUG: Blue Cell Count > 1 || tableReDrawn == false');
-                    blue_previous_square_pos = new_blue_square_pos; //before the next move starts set the previous position var to the most recent new sqaure pos value
-                }
-
-                //If you are re-sizing the table then you will need  to reset the previous_square_pos back to zero:
-                if (blue_cell_touch_count < 1 && tableReDrawn == true) {
+                } else if (blue_cell_touch_count < 1 && tableReDrawn == true) {
                     console.log('blue_original_square_pos = ' + blue_original_square_pos);
-                    console.log('A new table; tableReDrawn == true AND cell_count < 1');
+                    console.log('A new table; tableReDrawn == true AND red_cell_count < 1');
                     blue_previous_square_pos = blue_original_square_pos;
+                } else {
+                    console.log('DEBUG: Blue Cell Count > 1');
+                    blue_previous_square_pos = new_blue_square_pos; //before the next move starts set the previous position var to the most recent new sqaure pos value
                 }
 
                 console.log('DEBUG: blue_previous_sqaure_pos = ' + blue_previous_square_pos);
                 console.log('DEBUG: moveBlueFunction() executed');
 
                 td = document.getElementsByTagName("td")[blue_previous_square_pos];
-
                 grid_array[blue_previous_square_pos].count += 1;
-
                 td.innerHTML = grid_array[blue_previous_square_pos].count;
   
                 //Randomly choose a direction: up (1), down (2), left (3), or right (4):
@@ -489,8 +468,6 @@ Thanks and enjoy the code!
                 //Randomly choose a number of steps: 0, 1, or 2:
                 var N = Math.floor((Math.random() * 3) + 0);
                 console.log('DEBUG: D = ' + D + ' and N = ' + N);
-
-                console.log('DEBUG: new_blue_square_pos = ' + blue_previous_square_pos);
 
                 switch(D) {
                     case 1:
@@ -515,8 +492,6 @@ Thanks and enjoy the code!
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(blue_cell_touch_count);
-                        checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                     case 2:
                         new_blue_square_pos = blue_previous_square_pos+(N*10);
@@ -540,8 +515,6 @@ Thanks and enjoy the code!
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(blue_cell_touch_count);
-                        checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                     case 3:
                         new_blue_square_pos = blue_previous_square_pos-(N*1);
@@ -565,8 +538,6 @@ Thanks and enjoy the code!
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(blue_cell_touch_count);
-                        checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                     case 4:
                         new_blue_square_pos = blue_previous_square_pos+(N*1);
@@ -590,8 +561,6 @@ Thanks and enjoy the code!
                             att.value = "blue_circle"; //sets the value of the class attribute
                             td.setAttributeNode(att);
                         }
-                        checkForMaxTouchesOnBtnClick(blue_cell_touch_count);
-                        checkForWinnerOnBtnClick(blue_marker, new_blue_square_pos);
                         break;
                 }
             }
@@ -599,7 +568,7 @@ Thanks and enjoy the code!
         </div>
         <!-- move button -->
         <div>
-            <button onclick="moveRedFunction()">single move btn</button>
+            <button onclick="singleMove()">single move btn</button>
         </div>
         <!-- game simulator button -->
         <div>
